@@ -22,27 +22,29 @@ document.addEventListener('DOMContentLoaded', () => {
     let previousText = textArea.value; 
 
     // --- ПРОСТАЯ ФУНКЦИЯ ДЛЯ ОБНОВЛЕНИЯ ТЕКСТА ---
-    function updateTextDisplay(currentText, previousText) {
-        // Всегда используем простой рендеринг текста с заменой переносов строк на <br>
-        textDisplay.innerHTML = currentText.replace(/\n/g, '<br>');
-    }
+    // --- ОБНОВЛЕННАЯ ФУНКЦИЯ ДЛЯ ОБНОВЛЕНИЯ ТЕКСТА ---
+function updateTextDisplay(currentText, previousText) {
+    // Возвращаем innerHTML с правильными переносами
+    textDisplay.innerHTML = currentText.replace(/\n/g, '<br>');
+}
     
     // --- 1. Загрузка, Сохранение и Прокрутка ---
     const savedText = localStorage.getItem('myWordCounterText');
-    if (savedText) {
-        textArea.value = savedText;
-        textDisplay.innerHTML = savedText.replace(/\n/g, '<br>');
-        previousText = savedText;
-        
-        // Устанавливаем курсор в конец текста при загрузке
-        textArea.selectionStart = savedText.length;
-        textArea.selectionEnd = savedText.length;
-        
-        scrollTextToBottom();
-    } else {
-        textDisplay.innerHTML = '';
-        previousText = '';
-    }
+if (savedText) {
+    textArea.value = savedText;
+    // Используем ту же функцию для consistency
+    updateTextDisplay(savedText, savedText);
+    previousText = savedText;
+    
+    // Устанавливаем курсор в конец текста при загрузке
+    textArea.selectionStart = savedText.length;
+    textArea.selectionEnd = savedText.length;
+    
+    scrollTextToBottom();
+} else {
+    textDisplay.innerHTML = '';
+    previousText = '';
+}
     updateCounts(); 
 
     // КЛЮЧЕВОЙ ОБРАБОТЧИК: Вызывает все обновления
@@ -141,6 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- 3. ПРОСТАЯ И РАБОЧАЯ ФУНКЦИЯ ПОЗИЦИОНИРОВАНИЯ КУРСОРА ---
     // --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ПОЗИЦИОНИРОВАНИЯ КУРСОРА С УЧЕТОМ ПЕРЕНОСОВ СТРОК ---
+// --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ПОЗИЦИОНИРОВАНИЯ КУРСОРА ---
+// --- ПОЛНОСТЬЮ ПЕРЕРАБОТАННАЯ ФУНКЦИЯ ПОЗИЦИОНИРОВАНИЯ КУРСОРА ---
 function updateCursorPosition() {
     if (document.activeElement !== textArea) {
         customCursor.style.opacity = '0';
@@ -152,17 +156,18 @@ function updateCursorPosition() {
         const text = textArea.value;
         const textBeforeCursor = text.substring(0, position);
         
-        // Создаем временный элемент с ТОЧНО такими же стилями как textDisplay
+        // Создаем временный контейнер с ТОЧНО такими же стилями
         const tempDiv = document.createElement('div');
         const textDisplayStyle = getComputedStyle(textDisplay);
         
-        // Копируем ВСЕ стили, включая те, что отвечают за переносы
+        // Копируем ВСЕ стили textDisplay
         tempDiv.style.cssText = `
             position: absolute;
             top: 0;
             left: 0;
             width: ${textDisplay.clientWidth}px;
             height: auto;
+            min-height: ${textDisplay.clientHeight}px;
             font-family: ${textDisplayStyle.fontFamily};
             font-size: ${textDisplayStyle.fontSize};
             font-weight: ${textDisplayStyle.fontWeight};
@@ -170,47 +175,39 @@ function updateCursorPosition() {
             padding: ${textDisplayStyle.padding};
             margin: ${textDisplayStyle.margin};
             box-sizing: ${textDisplayStyle.boxSizing};
-            white-space: ${textDisplayStyle.whiteSpace};
+            white-space: pre-wrap;
             word-break: ${textDisplayStyle.wordBreak};
             overflow-wrap: ${textDisplayStyle.overflowWrap};
             visibility: hidden;
             z-index: -1;
         `;
         
-        // Воссоздаем содержимое textDisplay до позиции курсора
-        // Используем тот же метод, что и в основном отображении
+        // Воспроизводим текст ТАК ЖЕ как в textDisplay
         tempDiv.innerHTML = textBeforeCursor.replace(/\n/g, '<br>');
         
-        // Добавляем маркер курсора
+        // Добавляем маркер в конец
         const marker = document.createElement('span');
         marker.id = 'cursor-marker';
         marker.innerHTML = '|';
-        marker.style.cssText = 'visibility: hidden;';
+        marker.style.cssText = 'visibility: hidden; display: inline;';
         tempDiv.appendChild(marker);
         
-        // Добавляем временный элемент рядом с textDisplay
-        textDisplay.parentNode.appendChild(tempDiv);
+        // Добавляем в textDisplay для точного позиционирования
+        textDisplay.appendChild(tempDiv);
         
         // Получаем позицию маркера
         const markerRect = marker.getBoundingClientRect();
         const displayRect = textDisplay.getBoundingClientRect();
         
-        // Вычисляем позицию курсора относительно textDisplay
+        // Убираем временный элемент
+        textDisplay.removeChild(tempDiv);
+        
+        // Вычисляем позицию ОТНОСИТЕЛЬНО textDisplay
         const x = markerRect.left - displayRect.left;
         const y = markerRect.top - displayRect.top;
         
-        // Убираем временный элемент
-        textDisplay.parentNode.removeChild(tempDiv);
-        
-        // Проверяем, находится ли курсор в видимой области
-        const isInViewport = (
-            y >= 0 && 
-            y <= textDisplay.clientHeight &&
-            x >= 0 && 
-            x <= textDisplay.clientWidth
-        );
-        
-        if (isInViewport) {
+        // Устанавливаем позицию курсора
+        if (x >= 0 && y >= 0 && x <= displayRect.width && y <= displayRect.height) {
             customCursor.style.transform = `translate(${x}px, ${y}px)`;
             customCursor.style.opacity = '1';
         } else {
@@ -253,4 +250,6 @@ function updateCursorPosition() {
     
     // Пересчет позиции курсора при изменении размера окна
     window.addEventListener('resize', updateCursorPosition);
+     textArea.addEventListener('scroll', updateCursorPosition);
+    textDisplay.addEventListener('scroll', updateCursorPosition);
 });

@@ -788,19 +788,20 @@ body {
 #text-area {
     color: transparent;
     caret-color: transparent; 
-    
     resize: none;
     border: none;
     outline: none;
     overflow-y: scroll;
     z-index: 20; 
-    
-    /* Добавьте эти свойства для правильного переноса текста */
-    white-space: pre-wrap;
+    white-space: pre-wrap; /* Добавляем */
     word-wrap: break-word;
     word-break: break-word;
+    font-family: 'IBM Plex Sans', sans-serif; /* Явно указываем */
+    font-size: 18px; /* Явно указываем */
+    line-height: 1.5; /* Явно указываем */
+    padding: 15px; /* Явно указываем */
+    box-sizing: border-box;
     
-    /* СТИЛИЗОВАННЫЙ СКРОЛЛ */
     scrollbar-width: auto;
     scrollbar-color: rgba(208, 0, 0, 0.4) transparent;
 }
@@ -865,17 +866,21 @@ body {
 
 /* Стилизация для text-display (Только для отображения и плавности) */
 #text-display {
+    position: relative; /* Важно! */
     opacity: 1; 
     overflow-y: hidden; 
     z-index: 10; 
     pointer-events: auto;
     mask-image: none;
     -webkit-mask-image: none;
-    
-    /* Добавьте эти свойства для правильного переноса текста */
-    white-space: pre-wrap;
+    white-space: pre-wrap; /* Сохраняем пробелы и переносы */
     word-wrap: break-word;
     word-break: break-word;
+    font-family: 'IBM Plex Sans', sans-serif; /* Явно указываем шрифт */
+    font-size: 18px; /* Явно указываем размер */
+    line-height: 1.5; /* Явно указываем межстрочный интервал */
+    padding: 15px; /* Явно указываем отступы */
+    box-sizing: border-box;
 }
 
 /* Большая красивая надпись LCVR для страницы сравнения */
