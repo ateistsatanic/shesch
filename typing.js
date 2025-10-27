@@ -13,6 +13,112 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let isSoundReady = false; 
     let typingTimer;
+    // Добавить эти переменные в начало typing.js после объявления других переменных
+let startTime = null;
+let totalKeystrokes = 0;
+let correctKeystrokes = 0;
+let lastTextLength = 0;
+
+// Добавить эту функцию в typing.js после других функций
+function initializeTypingStats() {
+    startTime = Date.now();
+    totalKeystrokes = 0;
+    correctKeystrokes = 0;
+    lastTextLength = textArea.value.length;
+    updateTypingStats();
+}
+
+function updateTypingStats() {
+    if (!startTime) return;
+
+    const currentTime = Date.now();
+    const elapsedMinutes = (currentTime - startTime) / 60000;
+    
+    // Рассчитываем CPM (Characters Per Minute)
+    const currentTextLength = textArea.value.length;
+    const newCharacters = Math.max(0, currentTextLength - lastTextLength);
+    totalKeystrokes += newCharacters;
+    lastTextLength = currentTextLength;
+    
+    let cpm = 0;
+    if (elapsedMinutes > 0) {
+        cpm = Math.round(totalKeystrokes / elapsedMinutes);
+    }
+    
+    // Рассчитываем WPM (Words Per Minute) = CPM ÷ 5
+    const wpm = Math.round(cpm / 5);
+    
+    // Рассчитываем точность (упрощенная версия)
+    const accuracy = totalKeystrokes > 0 ? 
+        Math.round((correctKeystrokes / totalKeystrokes) * 100) : 100;
+    
+    // Обновляем отображение
+    updateStatDisplay('wpm-value', wpm);
+    updateStatDisplay('cpm-value', cpm);
+    updateStatDisplay('accuracy-value', accuracy + '%');
+}
+
+function updateStatDisplay(elementId, newValue) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const oldValue = element.textContent;
+    if (oldValue !== newValue.toString()) {
+        element.textContent = newValue;
+        element.classList.add('changed');
+        setTimeout(() => {
+            element.classList.remove('changed');
+        }, 300);
+    }
+}
+
+// Модифицируем функцию handleKeyPress для отслеживания точности
+function handleKeyPress(e) {
+    if (!isSoundReady) return; 
+    
+    customCursor.classList.add('is-typing');
+    
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+        customCursor.classList.remove('is-typing');
+    }, 300); 
+
+    const key = e.key;
+    
+    // Увеличиваем счетчик правильных нажатий (упрощенная логика)
+    // В реальном приложении здесь была бы более сложная логика проверки
+    if (key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        correctKeystrokes++;
+    }
+    
+    if (key.length > 1 && key !== ' ') {
+        return; 
+    }
+    universalKeySound.currentTime = 0; 
+    universalKeySound.play().catch(error => {
+         console.error("Ошибка воспроизведения key_press.wav:", error);
+    });
+}
+
+// Модифицируем обработчик input для обновления статистики
+textArea.addEventListener('input', () => {
+    const currentText = textArea.value;
+    localStorage.setItem('myWordCounterText', currentText);
+    
+    updateTextDisplay(currentText, previousText);
+    previousText = currentText; 
+    
+    updateCounts(); 
+    updateCursorPosition();
+    syncScroll();
+    updateTypingStats(); // Добавляем обновление статистики
+});
+
+// Инициализируем статистику при загрузке
+initializeTypingStats();
+
+// Также обновляем статистику каждую секунду для плавного отображения
+setInterval(updateTypingStats, 1000);
     
     const universalKeySound = new Audio('key_press.wav');
     const AUDIO_CONTEXT = new (window.AudioContext || window.webkitAudioContext)();
