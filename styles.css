@@ -496,18 +496,16 @@ body {
 
 /* 1. Счетчик слов и символов */
 #word-counter-display {
-    position: fixed; 
-    top: 80px; 
-    left: 0; 
-    width: 100vw; 
-    text-align: center; 
-    z-index: 5; 
+    position: relative;
+    text-align: center;
     user-select: none;
     pointer-events: none;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
+    margin-bottom: -20px;
+    transform: translateY(-23px);
 }
 
 /* Основной счетчик слов */
@@ -597,17 +595,13 @@ body {
 }
 
 /* Счетчик слов и символов (теперь не fixed) */
-#word-counter-display {
-    position: relative;
-    text-align: center;
-    user-select: none;
-    pointer-events: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: -20px; /* Поднимаем вверх */
-    transform: translateY(-90px); /* Еще выше поднимаем */
+#lcvr-brand {
+    color: var(--accent-color);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0.8;
+    text-transform: uppercase;
 }
 
 /* Основной счетчик слов */
